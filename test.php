@@ -35,4 +35,4 @@ echo "get {$key} again res:".var_export($res,1)."\n";
 // echo "delete {$key} res:".var_export($res,1)."\n";
 // $res = $r->get($key);
 // echo "after delete get {$key} res:".var_export($res,1)."\n";
-// var_dump(RocksDB::$version);
+var_dump(RocksDB::$version);
