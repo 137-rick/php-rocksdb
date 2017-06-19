@@ -206,20 +206,5 @@ PHPX_EXTENSION()
 				extension->registerResource("readOptionsResource", readOptionsResource_destory);
 
 			};
-
-//    extension->onShutdown = [extension]() noexcept
-//    {
-//        cout << extension->name << "shutdown" << endl;
-//    };
-//
-//    extension->onBeforeRequest = [extension]() noexcept
-//    {
-//        cout << extension->name << "beforeRequest" << endl;
-//    };
-//
-//    extension->onAfterRequest = [extension]() noexcept
-//    {
-//        cout << extension->name << "afterRequest" << endl;
-//    };
 	return extension;
 }
