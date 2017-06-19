@@ -20,19 +20,14 @@ $time = 5;
 $db_name = "/data/rocksdb/test7";
 $r = new RocksDB($db_name,$config['options'],$config['readoptions'],$config['writeoptions']);
 
-$key = "kkk";
-$val = "1111";
+$key = "key";
+$val = "val";
 $res = $r->put($key,$val);
 echo "put {$key} res:".var_export($res,1)."\n";
-// $res = $r->get($key);
-// echo "get {$key} res:".var_export($res,1)."\n";
-
-// sleep($time);
-// // echo "sleep {$time}s \n";
 $res = $r->get($key);
-echo "get {$key} again res:".var_export($res,1)."\n";
-// $res = $r->delete($key);
-// echo "delete {$key} res:".var_export($res,1)."\n";
-// $res = $r->get($key);
-// echo "after delete get {$key} res:".var_export($res,1)."\n";
+echo "get {$key} res:".var_export($res,1)."\n";
+$res = $r->delete($key);
+echo "delete {$key} res:".var_export($res,1)."\n";
+$res = $r->get($key);
+echo "after delete get {$key} res:".var_export($res,1)."\n";
 var_dump(RocksDB::$version);

@@ -71,23 +71,19 @@ PHPX_METHOD(rocksDB, construct) {
 	if (ttl > 0 && read_only == 0) {
 		DBWithTTL* db;
 		s = DBWithTTL::Open(options, path, &db, ttl);
-		auto _db = newResource("dbResource", db);
-		_this.set("rocksdb", _db);
+		_this.oSet("rocksdb", "dbResource", db);
 	} else if (ttl > 0 && read_only == 1) {
 		DBWithTTL* db;
 		s = DBWithTTL::Open(options, path, &db, ttl, true);
-		auto _db = newResource("dbResource", db);
-		_this.set("rocksdb", _db);
+		_this.oSet("rocksdb", "dbResource", db);
 	} else if (read_only == 0) {
 		DB* db;
 		s = DB::Open(options, path, &db);
-		auto _db = newResource("dbResource", db);
-		_this.set("rocksdb", _db);
+		_this.oSet("rocksdb", "dbResource", db);
 	} else {
 		DB* db;
 		s = DB::OpenForReadOnly(options, path, &db);
-		auto _db = newResource("dbResource", db);
-		_this.set("rocksdb", _db);
+		_this.oSet("rocksdb", "dbResource", db);
 	}
 
 	//抛出异常
@@ -107,8 +103,7 @@ PHPX_METHOD(rocksDB, construct) {
 			&& writeoption["disableWAL"].toBool()) {
 		write_options->disableWAL = true;
 	}
-	auto _write = newResource("writeOptionsResource", write_options);
-	_this.set("write_options", _write);
+	_this.oSet("write_options", "writeOptionsResource", write_options);
 
 	//ReadOptions
 	ReadOptions* read_options = new ReadOptions();
@@ -120,20 +115,18 @@ PHPX_METHOD(rocksDB, construct) {
 	if (readoption.exists("fill_cache") && readoption["fill_cache"].toBool()) {
 		read_options->fill_cache = true;
 	}
-
-	auto _read = newResource("readOptionsResource", read_options);
-	_this.set("read_options", _read);
+	_this.oSet("read_options", "readOptionsResource", read_options);
 }
 
 PHPX_METHOD(rocksDB, put) {
-	//write option get
-	WriteOptions* wop = _this.get("write_options").toResource<WriteOptions>(
-			"writeOptionsResource");
+	//get write option
+	WriteOptions* wop = _this.oGet<WriteOptions>("write_options","writeOptionsResource");
+	DB* db = _this.oGet<DB>("rocksdb","dbResource");
+
 	auto _key = args[0];
 	auto _value = args[1];
 	string key = _key.toString();
 	string value = _value.toString();
-	DB* db = _this.get("rocksdb").toResource<DB>("dbResource");
 	Status s = db->Put(*wop, key, value);
 	if (!s.ok()) {
 		retval = false;
@@ -144,10 +137,9 @@ PHPX_METHOD(rocksDB, put) {
 }
 
 PHPX_METHOD(rocksDB, get) {
-	//read option get
-	ReadOptions* rop = _this.get("read_options").toResource<ReadOptions>(
-			"readOptionsResource");
-	DB* db = _this.get("rocksdb").toResource<DB>("dbResource");
+	//get read option
+	ReadOptions* rop = _this.oGet<ReadOptions>("read_options","readOptionsResource");
+	DB* db = _this.oGet<DB>("rocksdb","dbResource");
 
 	auto _key = args[0];
 	string key = _key.toString();
@@ -161,12 +153,12 @@ PHPX_METHOD(rocksDB, get) {
 }
 
 PHPX_METHOD(rocksDB, delete) {
-	//write option get
-	WriteOptions* wop = _this.get("write_options").toResource<WriteOptions>(
-			"writeOptionsResource");
+	//get write option
+	WriteOptions* wop = _this.oGet<WriteOptions>("write_options","writeOptionsResource");
+	DB* db = _this.get("rocksdb").toResource<DB>("dbResource");
+
 	auto _key = args[0];
 	string key = _key.toString();
-	DB* db = _this.get("rocksdb").toResource<DB>("dbResource");
 	Status s = db->Delete(*wop, key);
 	if (!s.ok()) {
 		retval = false;
@@ -192,7 +184,7 @@ static void writeOptionsResource_destory(zend_resource *res) {
 
 PHPX_EXTENSION()
 {
-	Extension *extension = new Extension("phpx-rocksdb", "0.0.1");
+	Extension *extension = new Extension("phpx-rocksdb", "0.0.2");
 
 	extension->onStart =
 			[extension]() noexcept
@@ -207,10 +199,12 @@ PHPX_EXTENSION()
 
 				c->addProperty("version" , "0.0.1", STATIC);
 
+				extension->registerClass(c);
+
 				extension->registerResource("dbResource", dbResource_destory);
 				extension->registerResource("writeOptionsResource", writeOptionsResource_destory);
 				extension->registerResource("readOptionsResource", readOptionsResource_destory);
-				extension->registerClass(c);
+
 			};
 
 //    extension->onShutdown = [extension]() noexcept
