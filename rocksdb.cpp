@@ -68,10 +68,10 @@ PHPX_METHOD(rocksDB, construct) {
 	if (option.exists("max_open_files") && option["max_open_files"].isInt()) {
 		options.max_open_files = option["max_open_files"].toInt();
 	}
-	char delim_char;
-	var_dump(option);
+	char *delim_char;
 	if (option.exists("merge_operator") && option["merge_operator"].isString()) {
-		options.merge_operator.reset(new StringAppendOperator(','));
+		delim_char = option["merge_operator"].toCString();
+		options.merge_operator.reset(new StringAppendOperator(delim_char[0]));
 	}
 
 	Status s;

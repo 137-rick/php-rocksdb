@@ -48,10 +48,10 @@ $r = new RocksDB($db_name,$config['options'],$config['readoptions'],$config['wri
 
 $key = "key";
 $val = "111";
-$res = $r->put($key,$val);
-echo "put {$key}:{$val} res:".var_export($res,1)."\n";
-$res = $r->get($key);
-echo "get {$key} res:".var_export($res,1)."\n";
+// $res = $r->put($key,$val);
+// echo "put {$key}:{$val} res:".var_export($res,1)."\n";
+// $res = $r->get($key);
+// echo "get {$key} res:".var_export($res,1)."\n";
 // $res = $r->delete($key);
 // echo "delete {$key} res:".var_export($res,1)."\n";
 $res = $r->merge($key,"v1");
