@@ -17,6 +17,8 @@
 #include "phpx.h"
 #include "rocksdb/db.h"
 #include "rocksdb/utilities/db_ttl.h"
+#include "rocksdb/merge_operator.h"
+#include "merge_operators/stringappend.h"
 
 #include <iostream>
 
@@ -66,6 +68,11 @@ PHPX_METHOD(rocksDB, construct) {
 	if (option.exists("max_open_files") && option["max_open_files"].isInt()) {
 		options.max_open_files = option["max_open_files"].toInt();
 	}
+	char delim_char;
+	var_dump(option);
+	if (option.exists("merge_operator") && option["merge_operator"].isString()) {
+		options.merge_operator.reset(new StringAppendOperator(','));
+	}
 
 	Status s;
 	if (ttl > 0 && read_only == 0) {
@@ -88,7 +95,9 @@ PHPX_METHOD(rocksDB, construct) {
 
 	//抛出异常
 	if (!s.ok()) {
-		throwException("\\Exception", "RocksDB open failed ");
+		char * name;
+		sprintf(name, "RocksDB open failed msg:%s",s.ToString().c_str());
+		throwException("\\Exception",name);
 		return;
 	}
 	assert(s.ok());
@@ -136,6 +145,23 @@ PHPX_METHOD(rocksDB, put) {
 	}
 }
 
+PHPX_METHOD(rocksDB, merge) {
+	//get write option
+	WriteOptions* wop = _this.oGet<WriteOptions>("write_options","writeOptionsResource");
+	DB* db = _this.get("rocksdb").toResource<DB>("dbResource");
+
+	auto _key = args[0];
+	auto _val = args[1];
+	string key = _key.toString();
+	string val = _val.toString();
+	Status s = db->Merge(*wop, key, val);
+	if (!s.ok()) {
+		retval = false;
+	} else {
+		retval = true;
+	}
+}
+
 PHPX_METHOD(rocksDB, get) {
 	//get read option
 	ReadOptions* rop = _this.oGet<ReadOptions>("read_options","readOptionsResource");
@@ -167,6 +193,8 @@ PHPX_METHOD(rocksDB, delete) {
 	}
 }
 
+
+
 static void dbResource_destory(zend_resource *res) {
 	DB* db = static_cast<DB *>(res->ptr);
 	delete db;
@@ -190,14 +218,15 @@ PHPX_EXTENSION()
 			[extension]() noexcept
 			{
 //				cout << extension->name << "startup" << endl;
-				extension->registerConstant("CPP_EXT_VERSION", 1002);
+				extension->registerConstant("ROCKSDB_EXT_VERSION", 1002);
 				Class *c = new Class("RocksDB");
 				c->addMethod("__construct", rocksDB_construct);
 				c->addMethod("put" , rocksDB_put);
 				c->addMethod("get" , rocksDB_get);
 				c->addMethod("delete" , rocksDB_delete);
+				c->addMethod("merge" , rocksDB_merge);
 
-				c->addProperty("version" , "0.0.1", STATIC);
+				c->addProperty("version" , "1.0.2", STATIC);
 
 				extension->registerClass(c);
 
