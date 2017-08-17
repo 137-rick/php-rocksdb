@@ -95,9 +95,8 @@ PHPX_METHOD(rocksDB, construct) {
 
 	//抛出异常
 	if (!s.ok()) {
-		char * name;
-		sprintf(name, "RocksDB open failed msg:%s",s.ToString().c_str());
-		throwException("\\Exception",name);
+		string name = "RocksDB open failed msg"+s.ToString();
+		throwException("\\Exception",name.c_str());
 		return;
 	}
 	assert(s.ok());
