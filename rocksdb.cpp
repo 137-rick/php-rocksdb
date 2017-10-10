@@ -78,27 +78,41 @@ PHPX_METHOD(rocksDB, construct) {
 	if (ttl > 0 && read_only == 0) {
 		DBWithTTL* db;
 		s = DBWithTTL::Open(options, path, &db, ttl);
+        if (!s.ok()) {
+            string name = "RocksDB open failed msg"+s.ToString();
+            throwException("\\Exception",name.c_str());
+            return;
+        }
 		_this.oSet("rocksdb", "dbResource", db);
 	} else if (ttl > 0 && read_only == 1) {
 		DBWithTTL* db;
 		s = DBWithTTL::Open(options, path, &db, ttl, true);
+        if (!s.ok()) {
+            string name = "RocksDB open failed msg"+s.ToString();
+            throwException("\\Exception",name.c_str());
+            return;
+        }
 		_this.oSet("rocksdb", "dbResource", db);
 	} else if (read_only == 0) {
 		DB* db;
 		s = DB::Open(options, path, &db);
+        if (!s.ok()) {
+            string name = "RocksDB open failed msg"+s.ToString();
+            throwException("\\Exception",name.c_str());
+            return;
+        }
 		_this.oSet("rocksdb", "dbResource", db);
 	} else {
 		DB* db;
 		s = DB::OpenForReadOnly(options, path, &db);
+        if (!s.ok()) {
+            string name = "RocksDB open failed msg"+s.ToString();
+            throwException("\\Exception",name.c_str());
+            return;
+        }
 		_this.oSet("rocksdb", "dbResource", db);
 	}
 
-	//抛出异常
-	if (!s.ok()) {
-		string name = "RocksDB open failed msg"+s.ToString();
-		throwException("\\Exception",name.c_str());
-		return;
-	}
 	assert(s.ok());
 
 	//WriteOptions
